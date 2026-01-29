@@ -13,19 +13,44 @@ import CloseIcon from "@/assets/general/close.svg";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input/Input";
 
-const CORRECT_TOKENS = [
-    "MA8YQ-OKO2V-P3XZM-LR9QD-K7N4E",
-    "JX3FQ-7B2WK-9PL8D-M4R6T-VN5YH",
-    "KL9ZD-4WX7M-P2Q8R-T6H3Y-F5V1E",
-    "QZ4R7-M8N3K-L2P9D-X6Y1T-VB5WU",
-    "D9F2K-5T7XJ-R3M8P-Y4N6Q-W1VHZ",
-    "T3Y8H-P6K2M-9D4R7-Q1X5W-LN9VZ",
-    "R7W4E-K2N5D-M8P3Q-Y1T6X-V9BZJ",
-    "H5L9M-3X2P8-Q6R4T-K1Y7W-N9VZD",
-    "F2K8J-4D7N3-P5Q9R-M1W6X-T3YVH",
-    "B6N9Q-1M4K7-R3T8P-Y2X5W-Z7VHD",
-    "W4P7Z-2K9N5-D3R8M-Q1Y6T-X5VHB",
-];
+// Функция для проверки токена через API
+async function validateTokenAPI(tokenValue) {
+    try {
+        const response = await fetch(`/api/mayak/validate-token?token=${encodeURIComponent(tokenValue)}`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+        });
+        const data = await response.json();
+        return {
+            valid: data.valid || false,
+            remainingAttempts: data.remainingAttempts || 0,
+            error: data.error || null,
+        };
+    } catch (error) {
+        console.error("Ошибка проверки токена:", error);
+        return { valid: false, remainingAttempts: 0, error: "Ошибка сервера" };
+    }
+}
+
+// Функция для использования токена (увеличение счетчика)
+async function useTokenAPI(tokenValue) {
+    try {
+        const response = await fetch("/api/mayak/validate-token", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token: tokenValue }),
+        });
+        const data = await response.json();
+        return {
+            success: data.success || false,
+            remainingAttempts: data.remainingAttempts || 0,
+            error: data.error || null,
+        };
+    } catch (error) {
+        console.error("Ошибка использования токена:", error);
+        return { success: false, remainingAttempts: 0, error: "Ошибка сервера" };
+    }
+}
 
 export default function SettingsPage({ goTo }) {
     // Токен и его валидация
@@ -69,20 +94,43 @@ export default function SettingsPage({ goTo }) {
         }
     }
 
+    // Состояние для отображения оставшихся попыток токена
+    const [tokenRemainingAttempts, setTokenRemainingAttempts] = useState(0);
+    const [tokenError, setTokenError] = useState("");
+    const [isValidating, setIsValidating] = useState(false);
+
     const getRangeClass = (val) => {
         if (val < 30) return "range-low";
         if (val < 80) return "range-mid";
         return "range-high";
     };
 
+    // Асинхронная функция валидации токена через API
     const validateToken = useCallback(
-        (tokenToValidate = token) => {
-            const isValid = CORRECT_TOKENS.includes(tokenToValidate);
-            setIsTokenValid(isValid);
-
-            if (isValid) {
-                setShowNotification(true);
+        async (tokenToValidate = token) => {
+            if (!tokenToValidate || tokenToValidate.trim() === "") {
+                setIsTokenValid(false);
+                setShowNotification(false);
+                setTokenError("");
+                return;
             }
+
+            setIsValidating(true);
+            setTokenError("");
+
+            const result = await validateTokenAPI(tokenToValidate);
+
+            setIsTokenValid(result.valid);
+            setTokenRemainingAttempts(result.remainingAttempts);
+
+            if (result.valid) {
+                setShowNotification(true);
+            } else {
+                setTokenError(result.error || "Токен недействителен");
+                setShowNotification(false);
+            }
+
+            setIsValidating(false);
         },
         [token]
     );
@@ -125,6 +173,14 @@ export default function SettingsPage({ goTo }) {
         setIsLoading(true);
 
         try {
+            // Используем токен (увеличиваем счётчик использований)
+            const useResult = await useTokenAPI(token);
+            if (!useResult.success) {
+                alert(useResult.error || "Ошибка при использовании токена");
+                setIsLoading(false);
+                return;
+            }
+
             const userId = uuidv4();
 
             const userRecord = {

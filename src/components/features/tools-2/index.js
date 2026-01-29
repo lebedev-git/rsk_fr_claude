@@ -34,19 +34,24 @@ function removeKeyCookie() {
     document.cookie = "activated_key=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
 }
 
-const CORRECT_TOKENS = [
-    "MA8YQ-OKO2V-P3XZM-LR9QD-K7N4E",
-    "JX3FQ-7B2WK-9PL8D-M4R6T-VN5YH",
-    "KL9ZD-4WX7M-P2Q8R-T6H3Y-F5V1E",
-    "QZ4R7-M8N3K-L2P9D-X6Y1T-VB5WU",
-    "D9F2K-5T7XJ-R3M8P-Y4N6Q-W1VHZ",
-    "T3Y8H-P6K2M-9D4R7-Q1X5W-LN9VZ",
-    "R7W4E-K2N5D-M8P3Q-Y1T6X-V9BZJ",
-    "H5L9M-3X2P8-Q6R4T-K1Y7W-N9VZD",
-    "F2K8J-4D7N3-P5Q9R-M1W6X-T3YVH",
-    "B6N9Q-1M4K7-R3T8P-Y2X5W-Z7VHD",
-    "W4P7Z-2K9N5-D3R8M-Q1Y6T-X5VHB",
-];
+// Функция для проверки токена через API
+async function validateTokenAPI(tokenValue) {
+    try {
+        const response = await fetch(`/api/mayak/validate-token?token=${encodeURIComponent(tokenValue)}`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+        });
+        const data = await response.json();
+        return {
+            valid: data.valid || false,
+            remainingAttempts: data.remainingAttempts || 0,
+            error: data.error || null,
+        };
+    } catch (error) {
+        console.error("Ошибка проверки токена:", error);
+        return { valid: false, remainingAttempts: 0, error: "Ошибка сервера" };
+    }
+}
 
 export default function IndexPage({ goTo }) {
     const [contentData, setContentData] = useState({
@@ -129,8 +134,12 @@ export default function IndexPage({ goTo }) {
             const KeyInCookies = await getKeyFromCookies();
             // Используем опциональную цепочку (?.) для безопасного доступа к .text
             const token = KeyInCookies?.text;
-            if (token && CORRECT_TOKENS.includes(token)) {
-                setIsTokenValid(true);
+            if (token) {
+                // Проверяем токен через API
+                const result = await validateTokenAPI(token);
+                if (result.valid) {
+                    setIsTokenValid(true);
+                }
             }
         }
         checkToken();

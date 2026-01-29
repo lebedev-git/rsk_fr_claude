@@ -1,0 +1,86 @@
+# Build Progress Log
+Started: 2026-01-29
+Feature: Админ-панель для управления токенами доступа к тренажеру МАЯК
+
+## Codebase Patterns
+- Проект использует Next.js с файловой структурой pages/api для API эндпоинтов
+- Данные хранятся в JSON-файлах в папке data/
+- UI компоненты находятся в src/components/
+- Используется Tailwind CSS для стилизации
+- Проверка прав администратора через внешний API https://api.rosdk.ru/users/me/
+
+---
+
+## Выполненные задачи
+
+### 1. ✅ Модель базы данных (src/utils/mayakTokens.js)
+Создана полная модель для работы с токенами:
+- id (UUID)
+- name (название токена)
+- token (криптографически стойкий токен через crypto.randomBytes)
+- usageLimit (лимит использований)
+- usedCount (счетчик использований)
+- createdAt / updatedAt (даты)
+- isActive (статус активности)
+
+Функции:
+- readTokens(), saveTokens() - чтение/запись в JSON
+- generateToken(), generateId() - генерация токенов
+- createToken() - создание нового токена
+- getTokenById(), getTokenByValue() - поиск токенов
+- updateToken(), addAttemptsToToken() - обновление
+- deactivateToken() - деактивация
+- useToken() - использование токена (увеличение счетчика)
+- validateToken() - проверка валидности
+- getAllTokensWithStats() - получение всех токенов со статистикой
+
+### 2. ✅ API эндпоинты
+- POST /api/admin/mayak-tokens/generate - создание нового токена
+- GET /api/admin/mayak-tokens - получение списка всех токенов
+- PATCH /api/admin/mayak-tokens/:id/add-attempts - добавление попыток
+- DELETE /api/admin/mayak-tokens/:id - деактивация токена
+- GET /api/mayak/validate-token - проверка токена (без использования)
+- POST /api/mayak/validate-token - использование токена
+
+### 3. ✅ Админ-панель UI (src/pages/admin/mayak-tokens.js)
+- Статистика: всего токенов, активных, исчерпанных
+- Форма создания токена (название + лимит использований)
+- Таблица со всеми токенами:
+  - Название
+  - Токен (с кнопкой копирования)
+  - Использований (X/Y, осталось: Z)
+  - Статус (Активен/Исчерпан/Деактивирован)
+  - Дата создания
+  - Действия: + Попытки, Деактивировать
+
+### 4. ✅ Безопасность
+- Проверка роли администратора через API rosdk.ru
+- Генерация токенов через crypto.randomBytes(32)
+
+### 5. ✅ Интеграция с тренажером МАЯК
+- В src/components/features/tools-2/settings.js:
+  - validateTokenAPI() - проверка токена
+  - useTokenAPI() - использование токена (увеличение счетчика)
+- При активации тренажера токен проверяется и используется
+
+---
+
+## Файлы проекта
+
+### Новые файлы:
+- data/mayakTokens.json - хранилище токенов
+- src/utils/mayakTokens.js - модель и функции для работы с токенами
+- src/pages/api/admin/mayak-tokens/index.js - GET список токенов
+- src/pages/api/admin/mayak-tokens/generate.js - POST создание токена
+- src/pages/api/admin/mayak-tokens/[id]/index.js - GET/DELETE токен
+- src/pages/api/admin/mayak-tokens/[id]/add-attempts.js - PATCH добавление попыток
+- src/pages/api/mayak/validate-token.js - GET/POST проверка/использование токена
+- src/pages/admin/mayak-tokens.js - UI админ-панели
+
+### Изменённые файлы:
+- src/components/features/tools-2/index.js - добавлена проверка токена
+- src/components/features/tools-2/settings.js - интеграция с API токенов
+
+---
+
+## Статус: ВСЕ ЗАДАЧИ ВЫПОЛНЕНЫ ✅
