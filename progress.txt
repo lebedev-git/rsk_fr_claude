@@ -233,3 +233,31 @@ Feature: Админ-панель для управления токенами д
 - Новый: src/components/features/tools-2/addons/PromptRankingTrainer.js
 - Изменён: src/components/features/tools-2/trainer.js
 
+### 15. ✅ Верификация всех User Stories (2026-01-29)
+Проведена полная проверка реализации всех User Stories из PRD.
+
+**Верифицировано:**
+- US-001: Модель БД для токенов - src/utils/mayakTokens.js
+- US-002: API генерация токена - src/pages/api/admin/mayak-tokens/generate.js
+- US-003: API список токенов - src/pages/api/admin/mayak-tokens/index.js
+- US-004: API добавление попыток - src/pages/api/admin/mayak-tokens/[id]/add-attempts.js
+- US-005: API деактивация токена - src/pages/api/admin/mayak-tokens/[id]/index.js
+- US-006: UI форма генерации - src/pages/admin/mayak-tokens.js
+- US-007: UI таблица токенов - src/pages/admin/mayak-tokens.js
+- US-008: Middleware проверки токена - src/pages/api/mayak/validate-token.js
+- US-009: Исправить сохранение истории - src/components/features/tools-2/history.js
+- US-010: Исправить названия в истории - src/components/features/tools-2/history.js
+- US-011: Исправить баг сужения header - src/components/features/tools-2/history.js
+- US-012: Кнопка удаления МАЯК-ОКО - src/components/features/tools-2/addons/popup.js
+
+**Проверка качества:**
+- npm run build: ✅ Успешно скомпилирован
+- Все страницы статически сгенерированы
+
+**Learnings for future iterations:**
+- В проекте нет отдельного скрипта typecheck - используется npm run build для проверки
+- ESLint имеет проблему с конфигурацией (circular structure) - требует исправления
+- Данные хранятся в JSON-файлах, а не в базе данных
+
+---
+
