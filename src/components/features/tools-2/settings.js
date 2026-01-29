@@ -131,6 +131,8 @@ export default function SettingsPage({ goTo }) {
 
         if (result.valid) {
             setShowNotification(true);
+            // ВАЖНО: Сразу сохраняем валидный токен в cookies, чтобы он использовался при переходе в тренажер
+            await addKeyToCookies(tokenToValidate);
         } else {
             setTokenError(result.error || "Токен недействителен");
             setShowNotification(false);
