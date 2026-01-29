@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, memo, useCallback } from "react";
 import Header from "@/components/layout/Header";
 import Buffer from "./addons/popup";
+import PromptRankingTrainer from "./addons/PromptRankingTrainer";
 
 import InfoIcon from "@/assets/general/info.svg";
 import LinkIcon from "@/assets/general/link.svg";
@@ -541,7 +542,7 @@ const SecondQuestionnairePopup = memo(function SecondQuestionnairePopup({ onClos
     );
 });
 
-const ThirdQuestionnairePopup = memo(function ThirdQuestionnairePopup({ onClose, onSave }) {
+const ThirdQuestionnairePopup = memo(function ThirdQuestionnairePopup({ onClose, onSave, onOpenRankingTrainer }) {
     // --- НАЧАЛО ВАЖНОЙ ЛОГИКИ ---
     // 1. Создаем состояние 'levels', чтобы хранить значения из полей ввода.
     //    Без этой строки переменной 'levels' просто не существует.
@@ -589,13 +590,7 @@ const ThirdQuestionnairePopup = memo(function ThirdQuestionnairePopup({ onClose,
                             Отмена
                         </Button>
                         <Button
-                            as="a"
-                            href={"https://prompt-mastery-trainer-spo.lovable.app/"}
-                            target="_blank"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                window.open("https://prompt-mastery-trainer-spo.lovable.app/", "_blank");
-                            }}
+                            onClick={onOpenRankingTrainer}
                             className="!bg-gray-100 !text-gray-800 hover:!bg-gray-200 flex-1">
                             Пройти Тестирование
                         </Button>
@@ -611,7 +606,7 @@ const ThirdQuestionnairePopup = memo(function ThirdQuestionnairePopup({ onClose,
     );
 });
 
-const SessionCompletionPopup = memo(function SessionCompletionPopup({ onClose, onSave }) {
+const SessionCompletionPopup = memo(function SessionCompletionPopup({ onClose, onSave, onOpenRankingTrainer }) {
     const [levels, setLevels] = useState({
         level1: "",
         level2: "",
@@ -651,13 +646,7 @@ const SessionCompletionPopup = memo(function SessionCompletionPopup({ onClose, o
 
                 <div className="mt-6 flex justify-end gap-2">
                     <Button
-                        as="a"
-                        href={"https://prompt-mastery-trainer-spo.lovable.app/"}
-                        target="_blank"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            window.open("https://prompt-mastery-trainer-spo.lovable.app/", "_blank");
-                        }}
+                        onClick={onOpenRankingTrainer}
                         className="!bg-gray-100 !text-gray-800 hover:!bg-gray-200">
                         Пройти Тестирование
                     </Button>
@@ -1091,6 +1080,7 @@ export default function TrainerPage({ goTo }) {
     const [buffer, setBuffer] = useState({});
     const [history, setHistory] = useState([]);
     const [showBuffer, setShowBuffer] = useState(false);
+    const [showRankingTrainer, setShowRankingTrainer] = useState(false);
     const [currentField, setCurrentField] = useState(null);
 
     useEffect(() => {
@@ -1840,7 +1830,7 @@ export default function TrainerPage({ goTo }) {
                 />
             )}
 
-            {showThirdQuestionnaire && <ThirdQuestionnairePopup onClose={() => setShowThirdQuestionnaire(false)} onSave={handleSaveSessionCompletion} />}
+            {showThirdQuestionnaire && <ThirdQuestionnairePopup onClose={() => setShowThirdQuestionnaire(false)} onSave={handleSaveSessionCompletion} onOpenRankingTrainer={() => { setShowThirdQuestionnaire(false); setShowRankingTrainer(true); }} />}
 
             <div className="hero relative">
                 {isMobile && (
@@ -2012,8 +2002,17 @@ export default function TrainerPage({ goTo }) {
                     }}
                 />
             )}
-            {showSessionCompletionPopup && <SessionCompletionPopup onClose={() => setShowSessionCompletionPopup(false)} onSave={handleSaveSessionCompletion} />}
+            {showSessionCompletionPopup && <SessionCompletionPopup onClose={() => setShowSessionCompletionPopup(false)} onSave={handleSaveSessionCompletion} onOpenRankingTrainer={() => { setShowSessionCompletionPopup(false); setShowRankingTrainer(true); }} />}
             {showRolePopup && <RoleSelectionPopup onClose={() => setShowRolePopup(false)} onConfirm={handleRoleConfirm} />}
+            {showRankingTrainer && (
+                <PromptRankingTrainer
+                    onClose={() => setShowRankingTrainer(false)}
+                    onComplete={(results) => {
+                        console.log("Ranking trainer results:", results);
+                        setShowRankingTrainer(false);
+                    }}
+                />
+            )}
         </>
     );
 }
