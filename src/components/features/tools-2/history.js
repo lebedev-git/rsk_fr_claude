@@ -26,8 +26,11 @@ function getLocalStorage(key) {
     }
 }
 
+const TRAINER_PREFIX = "trainer_v2";
+const getStorageKey = (key) => `${TRAINER_PREFIX}_${key}`;
+
 function parseHistoryCookie() {
-    const cookie = localStorage.getItem("history") || "";
+    const cookie = localStorage.getItem(getStorageKey("history")) || "";
     if (!cookie) return [];
 
     try {
