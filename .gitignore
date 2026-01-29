@@ -44,3 +44,11 @@ next-env.d.ts
 data/DeltaTest.json
 
 data/results.json
+# Claude Code
+.claude/sessions/
+.claude/settings.local.json
+
+# Ralph (НЕ коммитим текущие задачи)
+progress.txt
+prd.json
+archive/

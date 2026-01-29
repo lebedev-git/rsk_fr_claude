@@ -1,0 +1,15 @@
+﻿{
+  "projectName": "RSK Frontend",
+  "branchName": "feature/example",
+  "context": "Next.js application",
+  "userStories": [
+    {
+      "id": 1,
+      "title": "Example story",
+      "description": "Description",
+      "acceptanceCriteria": ["Criteria 1"],
+      "priority": "high",
+      "passes": false
+    }
+  ]
+}
