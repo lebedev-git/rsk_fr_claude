@@ -1667,15 +1667,29 @@ export default function TrainerPage({ goTo }) {
     };
 
     useEffect(() => {
-        // Выполняем стандартную проверку токена при загрузке страницы
+        // Выполняем проверку токена через API при загрузке страницы
         async function checkToken() {
             const KeyInCookies = await getKeyFromCookies();
             const token = KeyInCookies?.text;
-            // Используем CORRECT_TOKENS из глобальных констант
-            if (token && CONSTANTS.CORRECT_TOKENS.includes(token)) {
-                setIsTokenValid(true);
-            } else {
-                goTo("settings"); // Если токена нет, отправляем на настройки
+
+            if (!token) {
+                goTo("settings");
+                return;
+            }
+
+            try {
+                // Проверяем токен через API (поддерживает токены из базы данных)
+                const response = await fetch(`/api/mayak/validate-token?token=${encodeURIComponent(token)}`);
+                const data = await response.json();
+
+                if (data.valid) {
+                    setIsTokenValid(true);
+                } else {
+                    goTo("settings");
+                }
+            } catch (error) {
+                console.error("Ошибка проверки токена:", error);
+                goTo("settings");
             }
         }
         checkToken();
