@@ -91,11 +91,11 @@ export default function HistoryPage({ goTo }) {
                 <div className=" flex flex-col gap-[1.6rem] items-center col-start-4 col-end-10 h-full">
                     <div className="flex flex-col gap-[1rem] w-full">
                         <div className="flex flex-col gap-[0.5rem]">
-                            <Switcher value={type} onChange={setType} className="!w-full">
+                            <Switcher value={type} onChange={setType} className="!w-full !flex-wrap">
                                 <Switcher.Option value="text">Текст</Switcher.Option>
                                 <Switcher.Option value="audio">Аудио</Switcher.Option>
-                                <Switcher.Option value="visual-static">Статика</Switcher.Option>
-                                <Switcher.Option value="visual-dynamic">Динамика</Switcher.Option>
+                                <Switcher.Option value="visual-static">Изображение</Switcher.Option>
+                                <Switcher.Option value="visual-dynamic">Видео</Switcher.Option>
                                 <Switcher.Option value="interactive">Интерактив</Switcher.Option>
                                 <Switcher.Option value="data">Данные</Switcher.Option>
                                 <Switcher.Option value="misc">Разное</Switcher.Option>
@@ -103,7 +103,7 @@ export default function HistoryPage({ goTo }) {
                             {/* ИЗМЕНЕНИЕ 2: Объединяем "Разное" в одну кнопку */}
                         </div>
                     </div>
-                    <div className="flex flex-col gap-[1.6rem] items-center w-[70%]">
+                    <div className="flex flex-col gap-[1.6rem] items-center w-full">
                         <h3>История</h3>
                         <div className="flex flex-col gap-[0.75rem]">
                             <div className="flex flex-col gap-[0.25rem]">
