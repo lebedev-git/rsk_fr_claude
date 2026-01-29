@@ -21,6 +21,8 @@ export default async function handler(req, res) {
                 valid: result.valid,
                 error: result.error || null,
                 remainingAttempts: result.remainingAttempts || 0,
+                usageLimit: result.token?.usageLimit || 0,
+                usedCount: result.token?.usedCount || 0,
             });
         } catch (error) {
             console.error("Error validating token:", error);

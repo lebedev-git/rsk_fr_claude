@@ -24,11 +24,13 @@ async function validateTokenAPI(tokenValue) {
         return {
             valid: data.valid || false,
             remainingAttempts: data.remainingAttempts || 0,
+            usageLimit: data.usageLimit || 0,
+            usedCount: data.usedCount || 0,
             error: data.error || null,
         };
     } catch (error) {
         console.error("Ошибка проверки токена:", error);
-        return { valid: false, remainingAttempts: 0, error: "Ошибка сервера" };
+        return { valid: false, remainingAttempts: 0, usageLimit: 0, usedCount: 0, error: "Ошибка сервера" };
     }
 }
 
@@ -72,9 +74,8 @@ export default function SettingsPage({ goTo }) {
     const [isLoading, setIsLoading] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
 
-    // Токен usage
-    //const tokenUsageFromBackend = 70
-    const max = 180;
+    // Токен usage - теперь динамические значения
+    const [max, setMax] = useState(180);
     const [value, setValue] = useState(0);
 
     // Получаем токен из cookies при монтировании компонента
@@ -123,6 +124,12 @@ export default function SettingsPage({ goTo }) {
             setIsTokenValid(result.valid);
             setTokenRemainingAttempts(result.remainingAttempts);
 
+            // Устанавливаем значения для шкалы на основе данных токена
+            if (result.usageLimit > 0) {
+                setMax(result.usageLimit);
+                setValue(result.remainingAttempts);
+            }
+
             if (result.valid) {
                 setShowNotification(true);
             } else {
@@ -143,10 +150,7 @@ export default function SettingsPage({ goTo }) {
                 validateToken(KeyInCookies.text);
                 setTokenExists(true);
             }
-
-            const recordsCount = await getRecordsCount();
-            // console.log(recordsCount)
-            setValue(max - recordsCount);
+            // Значения max и value теперь устанавливаются в validateToken
         }
         fetchTokenAndUsage();
     }, [validateToken]);
@@ -288,7 +292,20 @@ export default function SettingsPage({ goTo }) {
                             }}
                         />
 
-                        {showNotification && tokenExists && <span className="big p-3 bg-green-100 text-green-700 rounded-md">Тренажер активирован</span>}
+                        {showNotification && tokenExists && (
+                            <div className="flex flex-col gap-[1rem] items-center">
+                                <span className="big p-3 bg-green-100 text-green-700 rounded-md">Тренажер активирован</span>
+                                <span className="small text-(--color-gray-black)">
+                                    Осталось попыток: {tokenRemainingAttempts}
+                                </span>
+                                <Button
+                                    onClick={() => goTo("trainer")}
+                                    className="w-full"
+                                >
+                                    Войти в тренажер
+                                </Button>
+                            </div>
+                        )}
 
                         {showNotification && !tokenExists && <span className="big p-3 bg-yellow-100 text-yellow-700 rounded-md">Токен подходит. Заполните форму ниже для активации тренажера.</span>}
 
