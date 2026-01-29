@@ -1519,6 +1519,11 @@ export default function TrainerPage({ goTo }) {
         handleCloseBuffer();
     };
 
+    const handleUpdateBuffer = (newBuffer) => {
+        setBuffer(newBuffer);
+        setCookie(getStorageKey("buffer"), JSON.stringify(newBuffer));
+    };
+
     const handleShowBufferForField = (code) => {
         setCurrentField(code);
 
@@ -1996,7 +2001,7 @@ export default function TrainerPage({ goTo }) {
                     </div>
                 </div>
 
-                {showBuffer && <Buffer onClose={handleCloseBuffer} onInsert={handleInsertFromBuffer} buffer={buffer} currentField={currentField} />}
+                                {showBuffer && <Buffer onClose={handleCloseBuffer} onInsert={handleInsertFromBuffer} onUpdate={handleUpdateBuffer} buffer={buffer} currentField={currentField} />}
             </div>
             {showCompletionPopup && (
                 <TaskCompletionPopup
