@@ -1672,23 +1672,33 @@ export default function TrainerPage({ goTo }) {
             const KeyInCookies = await getKeyFromCookies();
             const token = KeyInCookies?.text;
 
+            console.log("[TRAINER] checkToken called");
+            console.log("[TRAINER] KeyInCookies:", KeyInCookies);
+            console.log("[TRAINER] token:", token);
+
             if (!token) {
+                console.log("[TRAINER] No token found, redirecting to settings");
                 goTo("settings");
                 return;
             }
 
             try {
                 // Проверяем токен через API (поддерживает токены из базы данных)
+                console.log("[TRAINER] Calling API with token:", token);
                 const response = await fetch(`/api/mayak/validate-token?token=${encodeURIComponent(token)}`);
                 const data = await response.json();
 
+                console.log("[TRAINER] API response:", data);
+
                 if (data.valid) {
+                    console.log("[TRAINER] Token is valid, staying in trainer");
                     setIsTokenValid(true);
                 } else {
+                    console.log("[TRAINER] Token is NOT valid, redirecting to settings");
                     goTo("settings");
                 }
             } catch (error) {
-                console.error("Ошибка проверки токена:", error);
+                console.error("[TRAINER] Error checking token:", error);
                 goTo("settings");
             }
         }

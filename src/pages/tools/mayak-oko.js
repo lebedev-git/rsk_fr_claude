@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 import TransitionWrapper from "@/components/layout/TransitionWrapper";
 
@@ -12,9 +12,10 @@ import AdminPage from "@/components/features/tools-2/admin";
 export default function Home() {
     const [pageKey, setPageKey] = useState("mayakOko");
 
-    const goTo = (pageName) => {
+    // Стабилизируем goTo с useCallback, чтобы избежать бесконечных ререндеров в дочерних компонентах
+    const goTo = useCallback((pageName) => {
         setPageKey(pageName);
-    };
+    }, []);
 
     return (
         <Layout>

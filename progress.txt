@@ -117,3 +117,21 @@ Feature: Админ-панель для управления токенами д
 - Заменена проверка CONSTANTS.CORRECT_TOKENS.includes(token) на вызов API
 - Теперь используется /api/mayak/validate-token для валидации токена
 - Токены из базы данных (mayakTokens.json) теперь корректно распознаются
+
+### 8. ✅ Исправлен вход администратора в тренажер (2026-01-29)
+Проблема: при входе через пароль администратора (fffff → a12345) тренажер редиректил обратно на страницу настроек.
+
+Причина:
+- В settings.js использовался захардкоженный токен DUMMY_VALID_TOKEN = "MA8YQ-OKO2V-P3XZM-LR9QD-K7N4E"
+- Этот токен не существует в базе данных mayakTokens.json
+- API /api/mayak/validate-token не распознавал его как валидный
+
+Исправления:
+1. В src/pages/api/mayak/validate-token.js:
+   - Добавлена константа ADMIN_BYPASS_TOKEN = "ADMIN-BYPASS-TOKEN"
+   - GET-запрос с этим токеном возвращает valid: true с неограниченными попытками
+   - POST-запрос с этим токеном возвращает success: true без увеличения счётчика
+
+2. В src/components/features/tools-2/settings.js:
+   - Заменён DUMMY_VALID_TOKEN на ADMIN_BYPASS_TOKEN
+   - Теперь при входе через пароль администратора используется правильный токен
