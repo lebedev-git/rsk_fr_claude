@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 
 import Header from "@/components/layout/Header";
 import { addKeyToCookies, addUserToCookies, getKeyFromCookies } from "./actions";
@@ -107,53 +107,59 @@ export default function SettingsPage({ goTo }) {
     };
 
     // Асинхронная функция валидации токена через API
-    const validateToken = useCallback(
-        async (tokenToValidate = token) => {
-            if (!tokenToValidate || tokenToValidate.trim() === "") {
-                setIsTokenValid(false);
-                setShowNotification(false);
-                setTokenError("");
-                return;
-            }
-
-            setIsValidating(true);
+    const validateToken = async (tokenToValidate) => {
+        if (!tokenToValidate || tokenToValidate.trim() === "") {
+            setIsTokenValid(false);
+            setShowNotification(false);
             setTokenError("");
+            return;
+        }
 
-            const result = await validateTokenAPI(tokenToValidate);
+        setIsValidating(true);
+        setTokenError("");
 
-            setIsTokenValid(result.valid);
-            setTokenRemainingAttempts(result.remainingAttempts);
+        const result = await validateTokenAPI(tokenToValidate);
 
-            // Устанавливаем значения для шкалы на основе данных токена
-            if (result.usageLimit > 0) {
-                setMax(result.usageLimit);
-                setValue(result.remainingAttempts);
-            }
+        setIsTokenValid(result.valid);
+        setTokenRemainingAttempts(result.remainingAttempts);
 
-            if (result.valid) {
-                setShowNotification(true);
-            } else {
-                setTokenError(result.error || "Токен недействителен");
-                setShowNotification(false);
-            }
+        // Устанавливаем значения для шкалы на основе данных токена
+        if (result.usageLimit > 0) {
+            setMax(result.usageLimit);
+            setValue(result.remainingAttempts);
+        }
 
-            setIsValidating(false);
-        },
-        [token]
-    );
+        if (result.valid) {
+            setShowNotification(true);
+        } else {
+            setTokenError(result.error || "Токен недействителен");
+            setShowNotification(false);
+        }
+
+        setIsValidating(false);
+    };
 
     useEffect(() => {
         async function fetchTokenAndUsage() {
             const KeyInCookies = await getKeyFromCookies();
-            if (KeyInCookies) {
+            if (KeyInCookies && KeyInCookies.text) {
                 setToken(KeyInCookies.text);
-                validateToken(KeyInCookies.text);
                 setTokenExists(true);
+                // Валидируем токен напрямую
+                const result = await validateTokenAPI(KeyInCookies.text);
+                setIsTokenValid(result.valid);
+                setTokenRemainingAttempts(result.remainingAttempts);
+                if (result.usageLimit > 0) {
+                    setMax(result.usageLimit);
+                    setValue(result.remainingAttempts);
+                }
+                if (result.valid) {
+                    setShowNotification(true);
+                }
             }
-            // Значения max и value теперь устанавливаются в validateToken
         }
         fetchTokenAndUsage();
-    }, [validateToken]);
+    }, []);
 
     const handleUserDataChange = (e) => {
         const { name, value } = e.target;
@@ -308,6 +314,14 @@ export default function SettingsPage({ goTo }) {
                         )}
 
                         {showNotification && !tokenExists && <span className="big p-3 bg-yellow-100 text-yellow-700 rounded-md">Токен подходит. Заполните форму ниже для активации тренажера.</span>}
+
+                        {tokenError && !showNotification && (
+                            <span className="big p-3 bg-red-100 text-red-700 rounded-md">{tokenError}</span>
+                        )}
+
+                        {isValidating && (
+                            <span className="big p-3 bg-blue-100 text-blue-700 rounded-md">Проверка токена...</span>
+                        )}
 
                         <div className="flex flex-col gap-[0.25rem]">
                             <span className={getRangeClass(value)}>
