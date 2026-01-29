@@ -158,3 +158,16 @@ Feature: Админ-панель для управления токенами д
 Исправление в src/components/features/tools-2/settings.js:
 - При успешной валидации токена через API, токен сразу сохраняется в cookies
 - Теперь при переходе в тренажер используется актуальный валидный токен
+
+### 11. ✅ Исправлено сохранение истории промтов (2026-01-29)
+Проблема: созданные промты не отображались на странице истории.
+
+Причина:
+- В trainer.js история сохранялась с ключом "trainer_v2_history" (через getStorageKey("history"))
+- В history.js история читалась с ключом "history" (без префикса)
+- Несоответствие ключей localStorage приводило к тому, что страница истории всегда была пустой
+
+Исправление в src/components/features/tools-2/history.js:
+- Добавлен TRAINER_PREFIX = "trainer_v2" и функция getStorageKey()
+- parseHistoryCookie() теперь использует getStorageKey("history") для чтения
+- Ключ localStorage теперь соответствует ключу в trainer.js
