@@ -7,10 +7,18 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input/Input";
 import Notify from "@/assets/general/notify.svg";
 
+const ADMIN_PASSWORD = "a12345";
+const AUTH_STORAGE_KEY = "mayak_admin_auth";
+
 export default function AdminMayakTokens() {
     const [tokens, setTokens] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    // Авторизация
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [password, setPassword] = useState("");
+    const [authError, setAuthError] = useState("");
 
     // Форма создания токена
     const [newTokenName, setNewTokenName] = useState("");
@@ -24,14 +32,36 @@ export default function AdminMayakTokens() {
     // Статистика
     const [stats, setStats] = useState({ total: 0, activeCount: 0, exhaustedCount: 0 });
 
+    // Проверка авторизации при загрузке
+    useEffect(() => {
+        const savedAuth = sessionStorage.getItem(AUTH_STORAGE_KEY);
+        if (savedAuth === "true") {
+            setIsAuthenticated(true);
+        } else {
+            setLoading(false);
+        }
+    }, []);
+
+    // Обработка входа
+    const handleLogin = (e) => {
+        e.preventDefault();
+        if (password === ADMIN_PASSWORD) {
+            setIsAuthenticated(true);
+            sessionStorage.setItem(AUTH_STORAGE_KEY, "true");
+            setAuthError("");
+        } else {
+            setAuthError("Неверный пароль");
+            setPassword("");
+        }
+    };
+
     // Загрузка токенов
     const fetchTokens = async () => {
         try {
             setLoading(true);
-            const res = await fetch("/api/admin/mayak-tokens", {
+            const res = await fetch("/api/admin/mayak-tokens?password=" + ADMIN_PASSWORD, {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
-                credentials: "include",
             });
 
             if (!res.ok) {
@@ -56,8 +86,10 @@ export default function AdminMayakTokens() {
     };
 
     useEffect(() => {
-        fetchTokens();
-    }, []);
+        if (isAuthenticated) {
+            fetchTokens();
+        }
+    }, [isAuthenticated]);
 
     // Создание нового токена
     const handleCreateToken = async (e) => {
@@ -73,10 +105,10 @@ export default function AdminMayakTokens() {
             const res = await fetch("/api/admin/mayak-tokens/generate", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                credentials: "include",
                 body: JSON.stringify({
                     name: newTokenName.trim(),
                     usageLimit: parseInt(newTokenLimit, 10),
+                    password: ADMIN_PASSWORD,
                 }),
             });
 
@@ -107,8 +139,7 @@ export default function AdminMayakTokens() {
             const res = await fetch(`/api/admin/mayak-tokens/${tokenId}/add-attempts`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({ attempts: parseInt(attemptsToAdd, 10) }),
+                body: JSON.stringify({ attempts: parseInt(attemptsToAdd, 10), password: ADMIN_PASSWORD }),
             });
 
             if (!res.ok) {
@@ -135,7 +166,7 @@ export default function AdminMayakTokens() {
             const res = await fetch(`/api/admin/mayak-tokens/${tokenId}`, {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
-                credentials: "include",
+                body: JSON.stringify({ password: ADMIN_PASSWORD }),
             });
 
             if (!res.ok) {
@@ -216,6 +247,45 @@ export default function AdminMayakTokens() {
                     <div className="text-center">
                         <p className="text-[var(--color-red)] mb-4">{error}</p>
                         <Button onClick={fetchTokens}>Попробовать снова</Button>
+                    </div>
+                </div>
+            </Layout>
+        );
+    }
+
+    // Форма авторизации
+    if (!isAuthenticated) {
+        return (
+            <Layout>
+                <Header>
+                    <Header.Heading>Токены МАЯК</Header.Heading>
+                    <Button icon>
+                        <Notify />
+                    </Button>
+                </Header>
+                <div className="flex h-full items-center justify-center">
+                    <div className="p-[2rem] rounded-[1rem] border-[1.5px] border-(--color-gray-plus-50) w-full max-w-[400px]">
+                        <h5 className="mb-[1.5rem] text-center">Вход в админ-панель</h5>
+                        <form onSubmit={handleLogin} className="flex flex-col gap-[1rem]">
+                            <div>
+                                <label className="link small text-(--color-gray-black) block mb-[.5rem]">
+                                    Пароль
+                                </label>
+                                <Input
+                                    type="password"
+                                    placeholder="Введите пароль"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    autoFocus
+                                />
+                            </div>
+                            {authError && (
+                                <p className="text-[var(--color-red)] text-center">{authError}</p>
+                            )}
+                            <Button type="submit">
+                                Войти
+                            </Button>
+                        </form>
                     </div>
                 </div>
             </Layout>

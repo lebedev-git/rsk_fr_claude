@@ -1,45 +1,21 @@
 import { deactivateToken, getTokenById } from "@/utils/mayakTokens";
 
-// Проверка роли администратора
-async function checkAdminRole(req) {
-    const token = req.cookies.users_access_token;
-    if (!token) {
-        return { authorized: false, error: "Не авторизован" };
+const ADMIN_PASSWORD = "a12345";
+
+// Проверка пароля администратора
+function checkAdminPassword(req) {
+    const password = req.query.password || req.body?.password;
+
+    if (password === ADMIN_PASSWORD) {
+        return { authorized: true };
     }
 
-    try {
-        const response = await fetch("https://api.rosdk.ru/users/me/", {
-            headers: {
-                "Content-Type": "application/json",
-                Cookie: req.headers.cookie || "",
-            },
-        });
-
-        if (!response.ok) {
-            return { authorized: false, error: "Ошибка авторизации" };
-        }
-
-        const userData = await response.json();
-
-        const isAdmin = userData.role === "admin" ||
-                        userData.is_admin === true ||
-                        userData.is_superuser === true ||
-                        userData.is_staff === true;
-
-        if (!isAdmin) {
-            return { authorized: false, error: "Доступ запрещен. Требуются права администратора" };
-        }
-
-        return { authorized: true, user: userData };
-    } catch (error) {
-        console.error("Admin check error:", error);
-        return { authorized: false, error: "Ошибка проверки прав" };
-    }
+    return { authorized: false, error: "Неверный пароль" };
 }
 
 export default async function handler(req, res) {
-    // Проверка прав администратора
-    const authCheck = await checkAdminRole(req);
+    // Проверка пароля администратора
+    const authCheck = checkAdminPassword(req);
     if (!authCheck.authorized) {
         return res.status(403).json({ success: false, error: authCheck.error });
     }
