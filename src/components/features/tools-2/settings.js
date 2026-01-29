@@ -245,11 +245,10 @@ export default function SettingsPage({ goTo }) {
         const CORRECT_ADMIN_PASSWORD = "a12345";
 
         if (adminPassword === CORRECT_ADMIN_PASSWORD) {
-            // Устанавливаем "валидный" токен и пользователя в cookie,
-            // чтобы тренажер вас пропустил
-            const DUMMY_VALID_TOKEN = "MA8YQ-OKO2V-P3XZM-LR9QD-K7N4E"; // Любой из списка правильных
+            // Используем специальный админ-токен для обхода проверки
+            const ADMIN_BYPASS_TOKEN = "ADMIN-BYPASS-TOKEN";
 
-            await addKeyToCookies(DUMMY_VALID_TOKEN);
+            await addKeyToCookies(ADMIN_BYPASS_TOKEN);
             await addUserToCookies("admin-id", "Администратор");
 
             goTo("trainer"); // Переходим в тренажер
