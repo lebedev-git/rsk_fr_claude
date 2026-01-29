@@ -1776,6 +1776,10 @@ export default function TrainerPage({ goTo }) {
                 } else if (currentTaskIndex + 1 === 2) {
                     e.preventDefault();
                     window.open("https://forms.yandex.ru/u/689197c9eb6146293aca92fa/", "_blank");
+                } else if (currentTask.toolLink1.includes("prompt-mastery-trainer")) {
+                    // Открываем внутренний тренажер ранжирования вместо внешней ссылки
+                    e.preventDefault();
+                    setShowRankingTrainer(true);
                 } else {
                     e.preventDefault();
                     window.open(currentTask.toolLink1, "_blank");
